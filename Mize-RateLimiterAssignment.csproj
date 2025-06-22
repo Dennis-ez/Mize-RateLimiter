@@ -8,4 +8,9 @@
         <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     </PropertyGroup>
 
+    <ItemGroup>
+        <Compile Remove="RateLimiter.Tests/**" />
+        <None Remove="RateLimiter.Tests/**" />
+    </ItemGroup>
+
 </Project>

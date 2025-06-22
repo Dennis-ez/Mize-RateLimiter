@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mize-RateLimiterAssignment", "Mize-RateLimiterAssignment.csproj", "{2491014A-A688-497E-BB50-9FA640F58973}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RateLimiter.Tests", "RateLimiter.Tests\RateLimiter.Tests.csproj", "{D0C874E6-1341-4AA8-8293-7E705E30019E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{2491014A-A688-497E-BB50-9FA640F58973}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2491014A-A688-497E-BB50-9FA640F58973}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2491014A-A688-497E-BB50-9FA640F58973}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D0C874E6-1341-4AA8-8293-7E705E30019E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0C874E6-1341-4AA8-8293-7E705E30019E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0C874E6-1341-4AA8-8293-7E705E30019E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0C874E6-1341-4AA8-8293-7E705E30019E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

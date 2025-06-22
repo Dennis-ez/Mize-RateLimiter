@@ -36,12 +36,6 @@ public class RateLimiter<TArg>
                             maxDelay = result.delay;
                     }
                 }
-
-                if (allPassed)
-                {
-                    foreach (var rule in _rules)
-                        rule.RecordCall();
-                }
             }
             finally
             {
@@ -54,7 +48,7 @@ public class RateLimiter<TArg>
             Console.WriteLine($"Delaying for {maxDelay.TotalMilliseconds} ms");
             await Task.Delay(maxDelay);
         }
-
+        Console.WriteLine($"Running API call to {argument} at {DateTime.Now:HH:mm:ss.fff}");
         await _action(argument);
     }
 }

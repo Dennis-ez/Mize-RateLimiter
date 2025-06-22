@@ -35,6 +35,8 @@ public class RateLimitRule
                 return (false, currentTime - _timeStamps.Peek());
             }
 
+            //Record the call immediately when we determine it can be performed
+            _timeStamps.Enqueue(currentTime);
             return (true, TimeSpan.Zero);
         }
         catch (Exception e)
