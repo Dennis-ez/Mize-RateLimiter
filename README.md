@@ -43,7 +43,7 @@ I use a sliding window approach because:
 
 Run tests with:
 ```bash
-dotnet test
+dotnet test RateLimiter.sln
 ```
 
 ## Requirements
