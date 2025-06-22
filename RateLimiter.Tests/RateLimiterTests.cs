@@ -9,7 +9,7 @@ public class RateLimiterTests
     [Fact]
     public async Task Perform_WithinLimits_ExecutesAction()
     {
-        //Arrange
+        
         var executed = false;
         var rules = new List<RateLimitRule>
         {
@@ -22,10 +22,10 @@ public class RateLimiterTests
             await Task.CompletedTask;
         }, rules);
 
-        //Act
+        
         await rateLimiter.Perform("test");
 
-        //Assert
+        
         Assert.True(executed);
     }
 
@@ -33,7 +33,6 @@ public class RateLimiterTests
     [Fact]
     public async Task Perform_ExceedsLimit_DelaysExecution()
     {
-        //Arrange
         var executionTimes = new List<DateTime>();
         var rules = new List<RateLimitRule>
         {
@@ -45,13 +44,11 @@ public class RateLimiterTests
             executionTimes.Add(DateTime.Now);
             await Task.CompletedTask;
         }, rules);
-
-        //Act
+        
         var task1 = rateLimiter.Perform("test1");
         var task2 = rateLimiter.Perform("test2");
         await Task.WhenAll(task1, task2);
-
-        //Assert
+        
         Assert.Equal(2, executionTimes.Count);
         var timeDifference = executionTimes[1] - executionTimes[0];
         Assert.True(timeDifference.TotalMilliseconds >= 500);
@@ -61,7 +58,6 @@ public class RateLimiterTests
     [Fact]
     public async Task Perform_MultipleRules_RespectsAllLimits()
     {
-        //Arrange
         var executionTimes = new List<DateTime>();
         var rules = new List<RateLimitRule>
         {
@@ -74,8 +70,7 @@ public class RateLimiterTests
             executionTimes.Add(DateTime.Now);
             await Task.CompletedTask;
         }, rules);
-
-        //Act
+        
         var tasks = new List<Task>();
         for (int i = 0; i < 3; i++)
         {
@@ -83,7 +78,7 @@ public class RateLimiterTests
         }
         await Task.WhenAll(tasks);
 
-        //Assert
+        
         Assert.Equal(3, executionTimes.Count);
         for (int i = 1; i < executionTimes.Count; i++)
         {
