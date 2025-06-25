@@ -14,17 +14,27 @@ public class RateLimitRule
         TimeWindow = timeWindow;
     }
 
-    public void RecordCall()
+    public async Task RecordCall()
     {
-        _timeStamps.Enqueue(DateTime.Now);
+        await _semaphore.WaitAsync();
+        try
+        {
+            _timeStamps.Enqueue(DateTime.UtcNow);
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 
     public async Task<(bool canPerform, TimeSpan delay)> CanPerform()
     {
+        await _semaphore.WaitAsync();
         try
         {
-            await _semaphore.WaitAsync();
-            var currentTime = DateTime.Now;
+            var currentTime = DateTime.UtcNow;
+            
+            // Clean up expired timestamps
             while (_timeStamps.TryPeek(out var firstTimeStamp) && (currentTime - firstTimeStamp >= TimeWindow))
             {
                 _timeStamps.Dequeue();
@@ -32,21 +42,18 @@ public class RateLimitRule
 
             if (_timeStamps.Count >= _maxCalls)
             {
-                return (false, currentTime - _timeStamps.Peek());
+                var oldestTimestamp = _timeStamps.Peek();
+                var windowEndTime = oldestTimestamp + TimeWindow;
+                var delay = windowEndTime - currentTime;
+                return (false, delay > TimeSpan.Zero ? delay : TimeWindow);
             }
 
-            //Record the call immediately when we determine it can be performed
-            _timeStamps.Enqueue(currentTime);
             return (true, TimeSpan.Zero);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            throw;
         }
         finally
         {
             _semaphore.Release();
         }
     }
+
 }

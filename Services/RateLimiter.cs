@@ -18,11 +18,11 @@ public class RateLimiter<TArg>
 
     public async Task Perform(TArg argument)
     {
-        while (true)
+        bool allPassed;
+        do
         {
+            allPassed = true;
             var maxDelay = TimeSpan.Zero;
-            var allPassed = true;
-
             await _semaphore.WaitAsync();
             try
             {
@@ -36,19 +36,25 @@ public class RateLimiter<TArg>
                             maxDelay = result.delay;
                     }
                 }
+
+                if (allPassed)
+                {
+                    foreach (var rule in _rules)
+                    {
+                        await rule.RecordCall();
+                    }
+                    Console.WriteLine($"Running API call to {argument} at {DateTime.Now:HH:mm:ss.fff}");
+                    await _action(argument);
+                    return;
+                }
             }
             finally
             {
                 _semaphore.Release();
             }
 
-            if (allPassed)
-                break; //break out of loop to run action
-
-            Console.WriteLine($"Delaying for {maxDelay.TotalMilliseconds} ms");
+            Console.WriteLine($"Rate limit exceeded. Delaying for {maxDelay.TotalMilliseconds:F3} ms before retry");
             await Task.Delay(maxDelay);
-        }
-        Console.WriteLine($"Running API call to {argument} at {DateTime.Now:HH:mm:ss.fff}");
-        await _action(argument);
-    }
-}
+        } while (!allPassed);
+    }}
+

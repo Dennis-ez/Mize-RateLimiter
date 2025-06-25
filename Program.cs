@@ -16,12 +16,9 @@ var rateLimiter = new RateLimiter<string>(async (url) =>
     await Task.Delay(100); 
 }, rulesList);
 
-var tasks = new List<Task>();
+    for (int i = 0; i < 15; i++)
+    {
+        await rateLimiter.Perform(i.ToString());
+    }
 
-for (int i = 0; i < 15; i++)
-{
-    tasks.Add(Task.Run(() => rateLimiter.Perform(i.ToString())));
-}
-
-await Task.WhenAll(tasks);
-Console.ReadLine(); //keep the app open
+Console.ReadLine(); //keep the app openß
