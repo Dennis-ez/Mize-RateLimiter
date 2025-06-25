@@ -39,7 +39,6 @@ public class RateLimiter<TArg>
 
                 if (allPassed)
                 {
-                    // Record the call for all rules before executing
                     foreach (var rule in _rules)
                     {
                         await rule.RecordCall();

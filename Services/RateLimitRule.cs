@@ -40,7 +40,6 @@ public class RateLimitRule
                 _timeStamps.Dequeue();
             }
 
-            // Check if we can make another call
             if (_timeStamps.Count >= _maxCalls)
             {
                 var oldestTimestamp = _timeStamps.Peek();
@@ -49,7 +48,6 @@ public class RateLimitRule
                 return (false, delay > TimeSpan.Zero ? delay : TimeWindow);
             }
 
-            // If we get here, we can make the call
             return (true, TimeSpan.Zero);
         }
         finally
