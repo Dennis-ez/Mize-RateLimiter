@@ -31,28 +31,27 @@ public class RateLimiterTests
 
     //Checks if the second call gets delayed when we hit the rate limit
     [Fact]
-    public async Task Perform_ExceedsLimit_DelaysExecution()
-    {
-        var executionTimes = new List<DateTime>();
-        var rules = new List<RateLimitRule>
-        {
-            new RateLimitRule(1, TimeSpan.FromMilliseconds(500))
-        };
-        
-        var rateLimiter = new RateLimiter<string>(async (arg) =>
-        {
-            executionTimes.Add(DateTime.Now);
-            await Task.CompletedTask;
-        }, rules);
-        
-        var task1 = rateLimiter.Perform("test1");
-        var task2 = rateLimiter.Perform("test2");
-        await Task.WhenAll(task1, task2);
-        
-        Assert.Equal(2, executionTimes.Count);
-        var timeDifference = executionTimes[1] - executionTimes[0];
-        Assert.True(timeDifference.TotalMilliseconds >= 500);
-    }
+  public async Task Perform_ExceedsLimit_DelaysExecution()
+   {
+       var executionTimes = new List<DateTime>();
+       var rules = new List<RateLimitRule>
+       {
+           new RateLimitRule(1, TimeSpan.FromMilliseconds(500))
+       };
+       
+       var rateLimiter = new RateLimiter<string>(async (arg) =>
+       {
+           executionTimes.Add(DateTime.Now);
+           await Task.CompletedTask;
+       }, rules);
+       
+       await rateLimiter.Perform("test1");
+       await rateLimiter.Perform("test2");
+       
+       Assert.Equal(2, executionTimes.Count);
+       var timeDifference = executionTimes[1] - executionTimes[0];
+       Assert.True(timeDifference.TotalMilliseconds >= 500);
+   }
 
     //Makes sure both rate limits work together (2 per second AND 1 per 500ms)
     [Fact]
@@ -64,29 +63,32 @@ public class RateLimiterTests
             new RateLimitRule(2, TimeSpan.FromSeconds(1)),
             new RateLimitRule(1, TimeSpan.FromMilliseconds(500))
         };
-        
+
         var rateLimiter = new RateLimiter<string>(async (arg) =>
         {
             executionTimes.Add(DateTime.Now);
             await Task.CompletedTask;
         }, rules);
-        
-        var tasks = new List<Task>();
+
         for (int i = 0; i < 3; i++)
         {
-            tasks.Add(rateLimiter.Perform($"test{i}"));
+            await rateLimiter.Perform($"test{i}");
         }
-        await Task.WhenAll(tasks);
 
-        
         Assert.Equal(3, executionTimes.Count);
+        
+        // Check both rules:
+        // 1. No more than 2 calls per second
+        var firstToLast = executionTimes[2] - executionTimes[0];
+        Assert.True(firstToLast.TotalSeconds >= 1);
+        
+        // 2. At least 500ms between each call
         for (int i = 1; i < executionTimes.Count; i++)
         {
             var timeDiff = executionTimes[i] - executionTimes[i - 1];
             Assert.True(timeDiff.TotalMilliseconds >= 500);
         }
     }
-
     //Makes sure we can't create a rate limiter with a null action
     [Fact]
     public async Task Perform_NullAction_ThrowsArgumentNullException()

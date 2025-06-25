@@ -25,6 +25,8 @@ public class RateLimitRuleTests
         var result1 = await rule.CanPerform();
         Assert.True(result1.canPerform);
         
+        await rule.RecordCall();
+        
         var result2 = await rule.CanPerform();
         
         Assert.False(result2.canPerform);
@@ -52,17 +54,24 @@ public class RateLimitRuleTests
     public async Task CanPerform_MultipleConcurrentCalls_HandlesRaceConditions()
     {
         var rule = new RateLimitRule(2, TimeSpan.FromSeconds(1));
-        var tasks = new List<Task<(bool canPerform, TimeSpan delay)>>();
-        
+        var successCount = 0;
+        var tasks = new List<Task>();
+
         for (int i = 0; i < 5; i++)
         {
-            tasks.Add(rule.CanPerform());
+            tasks.Add(Task.Run(async () =>
+            {
+                var result = await rule.CanPerform();
+                if (result.canPerform)
+                {
+                    await rule.RecordCall();
+                    Interlocked.Increment(ref successCount);
+                }
+            }));
         }
-
-        var results = await Task.WhenAll(tasks);
-        
-        Assert.Equal(2, results.Count(r => r.canPerform));
-        Assert.Equal(3, results.Count(r => !r.canPerform));
+    
+        await Task.WhenAll(tasks);
+        Assert.Equal(2, successCount);
     }
 
     //Checks if old timestamps get cleaned up properly after they expire
@@ -73,8 +82,10 @@ public class RateLimitRuleTests
         
         //Make initial calls
         var result1 = await rule.CanPerform();
-        var result2 = await rule.CanPerform();
         Assert.True(result1.canPerform);
+        await rule.RecordCall();
+        
+        var result2 = await rule.CanPerform();
         Assert.True(result2.canPerform);
         
         //Wait for window to expire
