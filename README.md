@@ -5,21 +5,32 @@
 
 ```csharp
 // Set up rules
-var rules = new List<RateLimitRule>
+var rulesList = new List<RateLimitRule>
 {
-    new RateLimitRule(maxCalls: 1, TimeSpan.FromSeconds(5)),  // Allow 1 call every 5 seconds
-    new RateLimitRule(maxCalls: 2, TimeSpan.FromMinutes(1)),  // Allow 2 calls per minute
+    new RateLimitRule(1, TimeSpan.FromSeconds(5)),    // Allow 1 call every 5 seconds
+    new RateLimitRule(2, TimeSpan.FromSeconds(15)),   // Allow 2 calls every 15 seconds
+    new RateLimitRule(3, TimeSpan.FromSeconds(10))    // Allow 3 calls every 10 seconds
 };
 
 // Create the rate limiter
 var rateLimiter = new RateLimiter<string>(async (url) =>
 {
-    // Your code here
+    //simulate running a task that takes 100 milliseconds
     await Task.Delay(100); 
-}, rules);
+}, rulesList);
 
-// Use it
-await rateLimiter.Perform("example");
+// Run multiple operations concurrently
+var tasks = new List<Task>();
+for (int i = 0; i < 15; i++)
+{
+    int requestId = i;
+    tasks.Add(Task.Run(async () =>
+    {
+        await rateLimiter.Perform(requestId.ToString());
+    }));
+}
+
+await Task.WhenAll(tasks);
 ```
 
 ## Sliding Window Approach
